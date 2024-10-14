@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function findNearestMTR(address, lat, lng) {
-        resultDiv.innerHTML = '<p class="text-info">Searching for the nearest MTR station...</p>';
         fetch('/find_nearest_mtr', {
             method: 'POST',
             headers: {
@@ -57,15 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
-                });
+                throw new Error('Network response was not ok');
             }
             return response.json();
         })
         .then(data => {
-            displayResult(data);
-            updateMap(data);
+            if (data.error) {
+                throw new Error(data.error);
+            } else {
+                displayResult(data);
+                updateMap(data);
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -83,8 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resultDiv.innerHTML = `
             <h3>Nearest MTR Station:</h3>
             <p>${data.station_name}</p>
-            <h4>Nearest Exit:</h4>
-            <p>${data.exit_name}</p>
             <h4>Walking Directions:</h4>
             ${directionsHtml}
         `;
@@ -103,9 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
         directionsService.route(request, function(result, status) {
             if (status === 'OK') {
                 directionsRenderer.setDirections(result);
-            } else {
-                console.error('Directions request failed due to ' + status);
-                resultDiv.innerHTML += '<p class="text-warning">Unable to display route on map. Please refer to the text directions above.</p>';
             }
         });
 
@@ -125,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new google.maps.Marker({
             position: destination,
             map: map,
-            title: `${data.station_name} - ${data.exit_name}`,
+            title: data.station_name,
             icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
         });
     }
@@ -133,19 +129,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function fetchMTRStatus() {
     const statusDiv = document.getElementById('mtr-status');
-    statusDiv.innerHTML = '<p class="text-info">Fetching MTR status...</p>';
     fetch('/mtr_status')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            statusDiv.innerHTML = `
-                <p><strong>MTR Status:</strong> ${data.status}</p>
-                <p><small>Last updated: ${data.timestamp}</small></p>
-            `;
+            if (data.error) {
+                statusDiv.innerHTML = `<p class="text-danger">Error fetching MTR status: ${data.error}</p>`;
+            } else {
+                statusDiv.innerHTML = `
+                    <p><strong>MTR Status:</strong> ${data.status}</p>
+                    <p><small>Last updated: ${data.timestamp}</small></p>
+                `;
+            }
         })
         .catch(error => {
             console.error('Error:', error);
