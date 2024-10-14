@@ -11,6 +11,25 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
 # Google Maps API key from environment variable
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
 
+# Accessibility information for MTR exits (sample data)
+mtr_accessibility = {
+    "Central": {
+        "exits": {
+            "A": ["Elevator", "Escalator"],
+            "B": ["Stairs only"],
+            "C": ["Elevator", "Escalator", "Wheelchair accessible"]
+        }
+    },
+    "Admiralty": {
+        "exits": {
+            "A": ["Escalator"],
+            "B": ["Stairs only"],
+            "C": ["Elevator", "Wheelchair accessible"]
+        }
+    },
+    # Add more stations and exits as needed
+}
+
 @app.route('/')
 def index():
     return render_template('index.html', api_key=GOOGLE_MAPS_API_KEY)
@@ -46,13 +65,17 @@ def find_nearest_mtr():
     steps = directions_data['routes'][0]['legs'][0]['steps']
     walking_directions = [{'instruction': step['html_instructions'], 'distance': step['distance']['text']} for step in steps]
     
+    # Get accessibility information
+    accessibility_info = mtr_accessibility.get(station_name, {"exits": {}})
+    
     return jsonify({
         'station_name': station_name,
         'station_lat': station_lat,
         'station_lng': station_lng,
         'input_lat': lat,
         'input_lng': lng,
-        'walking_directions': walking_directions
+        'walking_directions': walking_directions,
+        'accessibility': accessibility_info
     })
 
 @app.route('/mtr_status')
