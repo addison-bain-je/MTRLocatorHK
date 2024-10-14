@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark" class="h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="/static/css/custom.css">
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&loading=async" defer></script>
 </head>
-<body>
-    <div class="content-wrapper">
+<body class="d-flex flex-column h-100">
+    <main class="flex-shrink-0">
         <div class="container mt-5">
             <h1 class="mb-4">Hong Kong MTR Station Finder</h1>
             <div class="row">
@@ -35,9 +35,9 @@
                 </div>
             </div>
         </div>
-    </div>
-    <footer class="footer">
-        <div class="container">
+    </main>
+    <footer class="footer mt-auto py-3 bg-dark">
+        <div class="container text-center">
             <span class="text-muted">© 2024 Addison Bain</span>
         </div>
     </footer>

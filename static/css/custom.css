@@ -9,7 +9,7 @@ body {
     min-height: 100vh;
 }
 
-.content-wrapper {
+main {
     flex: 1 0 auto;
 }
 
@@ -36,7 +36,7 @@ body {
     background-color: var(--bs-dark);
     color: var(--bs-secondary);
     padding: 1rem 0;
-    text-align: center;
+    margin-top: auto;
 }
 
 @media (max-width: 767px) {
