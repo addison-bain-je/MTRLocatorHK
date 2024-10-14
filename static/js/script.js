@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addressForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const place = autocomplete.getPlace();
-        if (!place.geometry) {
+        if (!place || !place.geometry) {
             resultDiv.innerHTML = '<p class="text-danger">Please select a valid address from the suggestions.</p>';
             return;
         }
@@ -46,10 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ address: address, lat: lat, lng: lng }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
-                resultDiv.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                throw new Error(data.error);
             } else {
                 displayResult(data);
                 updateMap(data);
@@ -57,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            resultDiv.innerHTML = '<p class="text-danger">An error occurred. Please try again.</p>';
+            resultDiv.innerHTML = `<p class="text-danger">An error occurred: ${error.message}. Please try again.</p>`;
         });
     }
 
@@ -80,17 +85,17 @@ document.addEventListener('DOMContentLoaded', function() {
             marker.setMap(null);
         }
 
-        marker = new google.maps.marker.AdvancedMarkerElement({
+        marker = new google.maps.Marker({
             position: inputLocation,
             map: map,
             title: 'Your Location'
         });
 
-        new google.maps.marker.AdvancedMarkerElement({
+        new google.maps.Marker({
             position: stationLocation,
             map: map,
             title: data.station_name,
-            content: createMarkerContent(data.station_name, 'blue')
+            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
         });
 
         const bounds = new google.maps.LatLngBounds();
@@ -107,13 +112,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         line.setMap(map);
-    }
-
-    function createMarkerContent(title, color) {
-        const content = document.createElement('div');
-        content.classList.add('marker');
-        content.style.color = color;
-        content.textContent = title;
-        return content;
     }
 });
