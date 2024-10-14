@@ -6,34 +6,41 @@
     <title>Hong Kong MTR Station Finder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/custom.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&loading=async" defer></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Hong Kong MTR Station Finder</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <form id="address-form">
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Enter an address in Hong Kong:</label>
-                        <input type="text" class="form-control" id="address" placeholder="Start typing an address..." required>
+    <div class="content-wrapper">
+        <div class="container mt-5">
+            <h1 class="mb-4">Hong Kong MTR Station Finder</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <form id="address-form">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Enter an address in Hong Kong:</label>
+                            <input type="text" class="form-control" id="address" placeholder="Start typing an address..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Find Nearest Station</button>
+                    </form>
+                    <div id="result" class="mt-4"></div>
+                </div>
+                <div class="col-md-6">
+                    <div id="map"></div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div id="mtr-status" class="alert alert-info" role="alert">
+                        Loading MTR status...
                     </div>
-                    <button type="submit" class="btn btn-primary">Find Nearest Station</button>
-                </form>
-                <div id="result" class="mt-4"></div>
-            </div>
-            <div class="col-md-6">
-                <div id="map" style="height: 400px;"></div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-12">
-                <div id="mtr-status" class="alert alert-info" role="alert">
-                    Loading MTR status...
                 </div>
             </div>
         </div>
     </div>
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">© 2024 Addison Bain</span>
+        </div>
+    </footer>
     <script src="/static/js/script.js"></script>
 </body>
 </html>
