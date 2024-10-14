@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong MTR Station Exit Finder</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Hong Kong MTR Station Exit Finder</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <form id="address-form">
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Enter an address in Hong Kong:</label>
+                        <input type="text" class="form-control" id="address" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Find Nearest MTR Exit</button>
+                </form>
+                <div id="result" class="mt-4"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="map" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
