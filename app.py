@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
@@ -55,8 +56,9 @@ def mtr_status():
         else:
             status_text = "All MTR lines are operating normally."
         
-        # Get current timestamp
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Get current timestamp with UTC+8 timezone
+        hong_kong_tz = pytz.timezone('Asia/Hong_Kong')
+        timestamp = datetime.now(hong_kong_tz).strftime('%Y-%m-%d %H:%M:%S %Z')
         
         return jsonify({
             'status': status_text,
