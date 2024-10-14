@@ -14,18 +14,9 @@ def index():
 
 @app.route('/find_nearest_mtr', methods=['POST'])
 def find_nearest_mtr():
-    address = request.json['address']
-    
-    # Geocode the address
-    geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={GOOGLE_MAPS_API_KEY}"
-    geocode_response = requests.get(geocode_url)
-    geocode_data = geocode_response.json()
-    
-    if geocode_data['status'] != 'OK':
-        return jsonify({'error': 'Unable to geocode the address'}), 400
-    
-    lat = geocode_data['results'][0]['geometry']['location']['lat']
-    lng = geocode_data['results'][0]['geometry']['location']['lng']
+    data = request.json
+    lat = data['lat']
+    lng = data['lng']
     
     # Find nearby MTR stations
     places_url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=1000&type=subway_station&key={GOOGLE_MAPS_API_KEY}"
