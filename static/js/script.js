@@ -25,6 +25,14 @@ function initMap() {
 
     // Set up event listener for place changed
     autocomplete.addListener('place_changed', onPlaceChanged);
+
+    // Set up event listener for form submission
+    const addressForm = document.getElementById('address-form');
+    addressForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const address = document.getElementById('address').value;
+        findNearestMTR(address);
+    });
 }
 
 function onPlaceChanged() {
@@ -57,90 +65,86 @@ function onPlaceChanged() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    initMap();
-
-    const addressForm = document.getElementById('address-form');
+function findNearestMTR(address) {
     const resultDiv = document.getElementById('result');
+    fetch('/find_nearest_mtr', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: address }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultDiv.innerHTML = `<p class="text-danger">${data.error}</p>`;
+        } else {
+            displayResult(data);
+            updateMap(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultDiv.innerHTML = '<p class="text-danger">An error occurred. Please try again.</p>';
+    });
+}
 
-    addressForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const address = document.getElementById('address').value;
-        findNearestMTR(address);
+function displayResult(data) {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `
+        <h3>Nearest MTR Station:</h3>
+        <p>${data.station_name}</p>
+        <p>Head towards the exit in the direction of your destination.</p>
+    `;
+}
+
+function updateMap(data) {
+    const inputLocation = new google.maps.LatLng(data.input_lat, data.input_lng);
+    const stationLocation = new google.maps.LatLng(data.station_lat, data.station_lng);
+
+    map.setCenter(inputLocation);
+    map.setZoom(15);
+
+    if (marker) {
+        marker.setMap(null);
+    }
+
+    marker = new google.maps.marker.AdvancedMarkerElement({
+        position: inputLocation,
+        map: map,
+        title: 'Your Location'
     });
 
-    function findNearestMTR(address) {
-        fetch('/find_nearest_mtr', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ address: address }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                resultDiv.innerHTML = `<p class="text-danger">${data.error}</p>`;
-            } else {
-                displayResult(data);
-                updateMap(data);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            resultDiv.innerHTML = '<p class="text-danger">An error occurred. Please try again.</p>';
-        });
-    }
+    new google.maps.marker.AdvancedMarkerElement({
+        position: stationLocation,
+        map: map,
+        title: data.station_name,
+        content: new google.maps.marker.PinElement({
+            background: '#4285F4',
+            glyphColor: '#FFFFFF',
+            glyph: 'M'
+        }).element
+    });
 
-    function displayResult(data) {
-        resultDiv.innerHTML = `
-            <h3>Nearest MTR Station:</h3>
-            <p>${data.station_name}</p>
-            <p>Head towards the exit in the direction of your destination.</p>
-        `;
-    }
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(inputLocation);
+    bounds.extend(stationLocation);
+    map.fitBounds(bounds);
 
-    function updateMap(data) {
-        const inputLocation = new google.maps.LatLng(data.input_lat, data.input_lng);
-        const stationLocation = new google.maps.LatLng(data.station_lat, data.station_lng);
+    const line = new google.maps.Polyline({
+        path: [inputLocation, stationLocation],
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+    });
 
-        map.setCenter(inputLocation);
-        map.setZoom(15);
+    line.setMap(map);
+}
 
-        if (marker) {
-            marker.setMap(null);
-        }
-
-        marker = new google.maps.marker.AdvancedMarkerElement({
-            position: inputLocation,
-            map: map,
-            title: 'Your Location'
-        });
-
-        new google.maps.marker.AdvancedMarkerElement({
-            position: stationLocation,
-            map: map,
-            title: data.station_name,
-            content: new google.maps.marker.PinElement({
-                background: '#4285F4',
-                glyphColor: '#FFFFFF',
-                glyph: 'M'
-            }).element
-        });
-
-        const bounds = new google.maps.LatLngBounds();
-        bounds.extend(inputLocation);
-        bounds.extend(stationLocation);
-        map.fitBounds(bounds);
-
-        const line = new google.maps.Polyline({
-            path: [inputLocation, stationLocation],
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-        });
-
-        line.setMap(map);
-    }
-});
+// Ensure that the Google Maps API is loaded before initializing the map
+if (typeof google === 'object' && typeof google.maps === 'object') {
+    initMap();
+} else {
+    console.error('Google Maps API not loaded');
+}
