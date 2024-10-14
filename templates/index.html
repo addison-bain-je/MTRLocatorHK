@@ -6,7 +6,7 @@
     <title>Hong Kong MTR Station Exit Finder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/custom.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&callback=initMap" async defer></script>
 </head>
 <body>
     <div class="container mt-5">
@@ -28,5 +28,12 @@
         </div>
     </div>
     <script src="/static/js/script.js"></script>
+    <script>
+        // Error handler for Google Maps API
+        function gm_authFailure() {
+            console.error('Google Maps API failed to load');
+            alert('Error: Google Maps failed to load. Please check your API key and try again.');
+        }
+    </script>
 </body>
 </html>

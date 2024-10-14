@@ -142,9 +142,10 @@ function updateMap(data) {
     line.setMap(map);
 }
 
-// Ensure that the Google Maps API is loaded before initializing the map
-if (typeof google === 'object' && typeof google.maps === 'object') {
-    initMap();
-} else {
-    console.error('Google Maps API not loaded');
-}
+// Error handling for Google Maps API loading
+window.gm_authFailure = function() {
+    console.error('Google Maps API failed to load');
+    document.getElementById('map').innerHTML = '<p class="text-danger">Error: Google Maps failed to load. Please check your API key and try again.</p>';
+};
+
+// The initMap function will be called automatically by the Google Maps API once it's loaded
