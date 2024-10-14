@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import pytz
+from math import radians, sin, cos, sqrt, atan2
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
@@ -14,6 +15,15 @@ GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
 @app.route('/')
 def index():
     return render_template('index.html', api_key=GOOGLE_MAPS_API_KEY)
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # Radius of the Earth in kilometers
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    return R * c * 1000  # Distance in meters
 
 @app.route('/find_nearest_mtr', methods=['POST'])
 def find_nearest_mtr():
@@ -35,7 +45,27 @@ def find_nearest_mtr():
     station_lat = nearest_station['geometry']['location']['lat']
     station_lng = nearest_station['geometry']['location']['lng']
     
-    # Get walking directions
+    # Get detailed information about the MTR station
+    place_id = nearest_station['place_id']
+    details_url = f"https://maps.googleapis.com/maps/api/place/details/json?place_id={place_id}&fields=name,geometry,address_component&key={GOOGLE_MAPS_API_KEY}"
+    details_response = requests.get(details_url)
+    details_data = details_response.json()
+    
+    if details_data['status'] != 'OK':
+        return jsonify({'error': 'Unable to fetch station details'}), 500
+    
+    station_details = details_data['result']
+    
+    # Find the nearest exit (assuming exits are represented by address components)
+    exits = [component for component in station_details.get('address_components', []) if 'exit' in component['long_name'].lower()]
+    
+    if not exits:
+        return jsonify({'error': 'No exit information available for this station'}), 404
+    
+    nearest_exit = min(exits, key=lambda x: calculate_distance(lat, lng, station_lat, station_lng))
+    exit_name = nearest_exit['long_name']
+    
+    # Get walking directions to the nearest exit
     directions_url = f"https://maps.googleapis.com/maps/api/directions/json?origin={lat},{lng}&destination={station_lat},{station_lng}&mode=walking&key={GOOGLE_MAPS_API_KEY}"
     directions_response = requests.get(directions_url)
     directions_data = directions_response.json()
@@ -48,6 +78,7 @@ def find_nearest_mtr():
     
     return jsonify({
         'station_name': station_name,
+        'exit_name': exit_name,
         'station_lat': station_lat,
         'station_lng': station_lng,
         'input_lat': lat,

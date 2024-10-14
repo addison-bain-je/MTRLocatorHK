@@ -84,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
         resultDiv.innerHTML = `
             <h3>Nearest MTR Station:</h3>
             <p>${data.station_name}</p>
+            <h4>Nearest Exit:</h4>
+            <p>${data.exit_name}</p>
             <h4>Walking Directions:</h4>
             ${directionsHtml}
         `;
@@ -112,18 +114,28 @@ document.addEventListener('DOMContentLoaded', function() {
             marker.setMap(null);
         }
 
-        marker = new google.maps.Marker({
+        marker = new google.maps.marker.AdvancedMarkerElement({
             position: origin,
             map: map,
             title: 'Your Location'
         });
 
-        new google.maps.Marker({
+        new google.maps.marker.AdvancedMarkerElement({
             position: destination,
             map: map,
-            title: data.station_name,
-            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            title: `${data.station_name} - ${data.exit_name}`,
+            content: createMarkerContent(data.station_name, data.exit_name)
         });
+    }
+
+    function createMarkerContent(stationName, exitName) {
+        const content = document.createElement("div");
+        content.classList.add("station-marker");
+        content.innerHTML = `
+            <strong>${stationName}</strong><br>
+            ${exitName}
+        `;
+        return content;
     }
 });
 
