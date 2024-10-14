@@ -1,5 +1,6 @@
 let map;
 let marker;
+let autocomplete;
 
 function initMap() {
     const hongKong = { lat: 22.3193, lng: 114.1694 };
@@ -7,6 +8,18 @@ function initMap() {
         zoom: 11,
         center: hongKong,
     });
+
+    // Initialize the autocomplete object
+    autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('address'),
+        {
+            types: ['geocode'],
+            componentRestrictions: { country: 'hk' }
+        }
+    );
+
+    // Bias the autocomplete results to the current map's viewport
+    autocomplete.bindTo('bounds', map);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,17 +30,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addressForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const address = document.getElementById('address').value;
-        findNearestMTR(address);
+        const place = autocomplete.getPlace();
+        if (!place.geometry) {
+            resultDiv.innerHTML = '<p class="text-danger">Please select a valid address from the suggestions.</p>';
+            return;
+        }
+        findNearestMTR(place.formatted_address, place.geometry.location.lat(), place.geometry.location.lng());
     });
 
-    function findNearestMTR(address) {
+    function findNearestMTR(address, lat, lng) {
         fetch('/find_nearest_mtr', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ address: address }),
+            body: JSON.stringify({ address: address, lat: lat, lng: lng }),
         })
         .then(response => response.json())
         .then(data => {
@@ -63,17 +80,17 @@ document.addEventListener('DOMContentLoaded', function() {
             marker.setMap(null);
         }
 
-        marker = new google.maps.Marker({
+        marker = new google.maps.marker.AdvancedMarkerElement({
             position: inputLocation,
             map: map,
             title: 'Your Location'
         });
 
-        new google.maps.Marker({
+        new google.maps.marker.AdvancedMarkerElement({
             position: stationLocation,
             map: map,
             title: data.station_name,
-            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            content: createMarkerContent(data.station_name, 'blue')
         });
 
         const bounds = new google.maps.LatLngBounds();
@@ -90,5 +107,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         line.setMap(map);
+    }
+
+    function createMarkerContent(title, color) {
+        const content = document.createElement('div');
+        content.classList.add('marker');
+        content.style.color = color;
+        content.textContent = title;
+        return content;
     }
 });
