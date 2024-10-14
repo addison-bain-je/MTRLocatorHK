@@ -1,6 +1,8 @@
 let map;
 let marker;
 let autocomplete;
+let directionsService;
+let directionsRenderer;
 
 function initMap() {
     const hongKong = { lat: 22.3193, lng: 114.1694 };
@@ -20,6 +22,11 @@ function initMap() {
 
     // Bias the autocomplete results to the current map's viewport
     autocomplete.bindTo('bounds', map);
+
+    // Initialize DirectionsService and DirectionsRenderer
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -68,18 +75,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayResult(data) {
+        let directionsHtml = '<ol>';
+        data.walking_directions.forEach(step => {
+            directionsHtml += `<li>${step.instruction} (${step.distance})</li>`;
+        });
+        directionsHtml += '</ol>';
+
         resultDiv.innerHTML = `
             <h3>Nearest MTR Station:</h3>
             <p>${data.station_name}</p>
-            <p>Head towards the exit in the direction of your destination.</p>
+            <h4>Walking Directions:</h4>
+            ${directionsHtml}
         `;
     }
 
     function updateMap(data) {
-        const inputLocation = new google.maps.LatLng(data.input_lat, data.input_lng);
-        const stationLocation = new google.maps.LatLng(data.station_lat, data.station_lng);
+        const origin = new google.maps.LatLng(data.input_lat, data.input_lng);
+        const destination = new google.maps.LatLng(data.station_lat, data.station_lng);
 
-        map.setCenter(inputLocation);
+        const request = {
+            origin: origin,
+            destination: destination,
+            travelMode: 'WALKING'
+        };
+
+        directionsService.route(request, function(result, status) {
+            if (status === 'OK') {
+                directionsRenderer.setDirections(result);
+            }
+        });
+
+        map.setCenter(origin);
         map.setZoom(15);
 
         if (marker) {
@@ -87,32 +113,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         marker = new google.maps.Marker({
-            position: inputLocation,
+            position: origin,
             map: map,
             title: 'Your Location'
         });
 
         new google.maps.Marker({
-            position: stationLocation,
+            position: destination,
             map: map,
             title: data.station_name,
             icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
         });
-
-        const bounds = new google.maps.LatLngBounds();
-        bounds.extend(inputLocation);
-        bounds.extend(stationLocation);
-        map.fitBounds(bounds);
-
-        const line = new google.maps.Polyline({
-            path: [inputLocation, stationLocation],
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-        });
-
-        line.setMap(map);
     }
 });
 

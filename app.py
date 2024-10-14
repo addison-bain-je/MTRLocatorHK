@@ -35,12 +35,24 @@ def find_nearest_mtr():
     station_lat = nearest_station['geometry']['location']['lat']
     station_lng = nearest_station['geometry']['location']['lng']
     
+    # Get walking directions
+    directions_url = f"https://maps.googleapis.com/maps/api/directions/json?origin={lat},{lng}&destination={station_lat},{station_lng}&mode=walking&key={GOOGLE_MAPS_API_KEY}"
+    directions_response = requests.get(directions_url)
+    directions_data = directions_response.json()
+    
+    if directions_data['status'] != 'OK':
+        return jsonify({'error': 'Unable to fetch walking directions'}), 500
+    
+    steps = directions_data['routes'][0]['legs'][0]['steps']
+    walking_directions = [{'instruction': step['html_instructions'], 'distance': step['distance']['text']} for step in steps]
+    
     return jsonify({
         'station_name': station_name,
         'station_lat': station_lat,
         'station_lng': station_lng,
         'input_lat': lat,
-        'input_lng': lng
+        'input_lng': lng,
+        'walking_directions': walking_directions
     })
 
 @app.route('/mtr_status')
