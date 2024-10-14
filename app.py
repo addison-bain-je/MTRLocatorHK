@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, jsonify
 import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
@@ -32,9 +33,6 @@ def find_nearest_mtr():
     station_lat = nearest_station['geometry']['location']['lat']
     station_lng = nearest_station['geometry']['location']['lng']
     
-    # For simplicity, we'll assume the nearest exit is in the direction of the input location
-    # In a real-world scenario, you'd need more detailed data about station exits
-    
     return jsonify({
         'station_name': station_name,
         'station_lat': station_lat,
@@ -42,6 +40,23 @@ def find_nearest_mtr():
         'input_lat': lat,
         'input_lng': lng
     })
+
+@app.route('/mtr_status')
+def mtr_status():
+    try:
+        url = "http://www.mtr.com.hk/alert/index.html"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        status_div = soup.find('div', class_='line-status')
+        if status_div:
+            status_text = status_div.get_text(strip=True)
+        else:
+            status_text = "All MTR lines are operating normally."
+        
+        return jsonify({'status': status_text})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

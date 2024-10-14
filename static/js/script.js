@@ -24,6 +24,7 @@ function initMap() {
 
 document.addEventListener('DOMContentLoaded', function() {
     initMap();
+    fetchMTRStatus();
 
     const addressForm = document.getElementById('address-form');
     const resultDiv = document.getElementById('result');
@@ -114,3 +115,23 @@ document.addEventListener('DOMContentLoaded', function() {
         line.setMap(map);
     }
 });
+
+function fetchMTRStatus() {
+    const statusDiv = document.getElementById('mtr-status');
+    fetch('/mtr_status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                statusDiv.innerHTML = `<p class="text-danger">Error fetching MTR status: ${data.error}</p>`;
+            } else {
+                statusDiv.innerHTML = `<p><strong>MTR Status:</strong> ${data.status}</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            statusDiv.innerHTML = '<p class="text-danger">Failed to fetch MTR status. Please try again later.</p>';
+        });
+}
+
+// Fetch MTR status every 5 minutes
+setInterval(fetchMTRStatus, 5 * 60 * 1000);
