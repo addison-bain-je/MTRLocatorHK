@@ -9,11 +9,11 @@ function initMap() {
         center: hongKong,
     });
 
-    // Initialize the autocomplete object
+    // Initialize the autocomplete object with updated options
     autocomplete = new google.maps.places.Autocomplete(
         document.getElementById('address'),
         {
-            types: ['address'],
+            types: ['address', 'establishment'],
             componentRestrictions: { country: 'hk' }
         }
     );
