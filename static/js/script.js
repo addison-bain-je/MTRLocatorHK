@@ -81,23 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         directionsHtml += '</ol>';
 
-        let accessibilityHtml = '<h4>Accessibility Information:</h4>';
-        if (Object.keys(data.accessibility.exits).length > 0) {
-            accessibilityHtml += '<ul>';
-            for (const [exit, features] of Object.entries(data.accessibility.exits)) {
-                accessibilityHtml += `<li>Exit ${exit}: ${features.join(', ')}</li>`;
-            }
-            accessibilityHtml += '</ul>';
-        } else {
-            accessibilityHtml += '<p>No accessibility information available for this station.</p>';
-        }
-
         resultDiv.innerHTML = `
             <h3>Nearest MTR Station:</h3>
             <p>${data.station_name}</p>
             <h4>Walking Directions:</h4>
             ${directionsHtml}
-            ${accessibilityHtml}
         `;
     }
 
