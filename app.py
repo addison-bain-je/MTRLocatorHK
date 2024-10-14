@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, jsonify
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
@@ -54,7 +55,13 @@ def mtr_status():
         else:
             status_text = "All MTR lines are operating normally."
         
-        return jsonify({'status': status_text})
+        # Get current timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        return jsonify({
+            'status': status_text,
+            'timestamp': timestamp
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

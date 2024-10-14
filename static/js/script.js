@@ -124,7 +124,10 @@ function fetchMTRStatus() {
             if (data.error) {
                 statusDiv.innerHTML = `<p class="text-danger">Error fetching MTR status: ${data.error}</p>`;
             } else {
-                statusDiv.innerHTML = `<p><strong>MTR Status:</strong> ${data.status}</p>`;
+                statusDiv.innerHTML = `
+                    <p><strong>MTR Status:</strong> ${data.status}</p>
+                    <p><small>Last updated: ${data.timestamp}</small></p>
+                `;
             }
         })
         .catch(error => {
