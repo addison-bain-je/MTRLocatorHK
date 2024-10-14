@@ -6,7 +6,6 @@
     <title>Hong Kong MTR Station Finder</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/custom.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&loading=async" defer></script>
 </head>
 <body class="d-flex flex-column h-100">
     <main class="flex-shrink-0">
@@ -41,6 +40,7 @@
             <span class="text-muted">© 2024 Addison Bain</span>
         </div>
     </footer>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=places&callback=initMap" async defer></script>
     <script src="/static/js/script.js"></script>
 </body>
 </html>

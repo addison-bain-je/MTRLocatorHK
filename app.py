@@ -4,12 +4,20 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import pytz
+import logging
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
 # Google Maps API key from environment variable
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
+if GOOGLE_MAPS_API_KEY:
+    logging.info("GOOGLE_MAPS_API_KEY is set")
+else:
+    logging.warning("GOOGLE_MAPS_API_KEY is not set")
 
 @app.route('/')
 def index():
