@@ -1,0 +1,15 @@
+/* Custom styles for the Hong Kong MTR Station Finder */
+
+#map {
+    height: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#result {
+    margin-top: 20px;
+}
+
+#mtr-status {
+    margin-top: 20px;
+}
