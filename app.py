@@ -1,12 +1,12 @@
 import os
-from flask import Flask, send_file, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import pytz
 import logging
 
-app = Flask(__name__, static_folder='public', static_url_path='')
+app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
 
 # Set up logging
@@ -21,22 +21,14 @@ else:
 
 @app.route('/')
 def index():
-    with open('public/index.html', 'r') as file:
-        content = file.read()
-        content = content.replace('GOOGLE_MAPS_API_KEY', GOOGLE_MAPS_API_KEY)
-    return content
+    return render_template('index.html', api_key=GOOGLE_MAPS_API_KEY)
 
 @app.route('/find_nearest_mtr', methods=['POST'])
 def find_nearest_mtr():
     data = request.json
-    if not data:
-        return jsonify({'error': 'No data provided'}), 400
-    address = data.get('address')
-    lat = data.get('lat')
-    lng = data.get('lng')
-    
-    if not all([address, lat, lng]):
-        return jsonify({'error': 'Missing required data'}), 400
+    address = data['address']
+    lat = data['lat']
+    lng = data['lng']
     
     # Find nearby MTR stations
     places_url = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={lat},{lng}&radius=1000&type=subway_station&key={GOOGLE_MAPS_API_KEY}"
